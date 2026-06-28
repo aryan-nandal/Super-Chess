@@ -98,4 +98,17 @@ void main() {
     expect(o.termination, GameTermination.checkmate);
     expect(o.winner, PieceColor.black);
   });
+
+  test('a terminal draw freezes the board against further moves', () {
+    // Bare kings: a draw by insufficient material that still has legal moves.
+    controller().loadFen('4k3/8/8/8/8/8/8/4K3 w - - 0 1');
+    expect(state().outcome.termination, GameTermination.insufficientMaterial);
+    expect(state().outcome.isOver, isTrue);
+
+    final fenBefore = state().position.toFen();
+    controller().selectOrMove(Square.parse('e1')); // own king
+    expect(state().selected, isNull);
+    expect(state().targets, isEmpty);
+    expect(state().position.toFen(), fenBefore);
+  });
 }
