@@ -87,6 +87,10 @@ Square _kingSquare(List<Piece?> board, PieceColor color) {
   throw StateError('no $color king on the board');
 }
 
+/// The square of [color]'s king. Throws [StateError] if there is none.
+Square kingSquareOf(Position pos, PieceColor color) =>
+    _kingSquare(pos.board, color);
+
 /// Whether the side to move in [pos] is in check.
 bool isCheck(Position pos) => isSquareAttacked(
     pos.board, _kingSquare(pos.board, pos.turn), pos.turn.opposite);
