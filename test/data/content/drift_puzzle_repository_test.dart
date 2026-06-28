@@ -15,15 +15,20 @@ void main() {
     int rating,
     List<String> themes,
   ) async {
-    await db.into(db.puzzles).insert(PuzzlesCompanion.insert(
-          id: id,
-          fen: fen,
-          movesUci: moves,
-          rating: Value(rating),
-        ));
+    await db
+        .into(db.puzzles)
+        .insert(
+          PuzzlesCompanion.insert(
+            id: id,
+            fen: fen,
+            movesUci: moves,
+            rating: Value(rating),
+          ),
+        );
     for (final theme in themes) {
-      await db.into(db.puzzleThemes).insert(
-          PuzzleThemesCompanion.insert(puzzleId: id, theme: theme));
+      await db
+          .into(db.puzzleThemes)
+          .insert(PuzzleThemesCompanion.insert(puzzleId: id, theme: theme));
     }
   }
 
