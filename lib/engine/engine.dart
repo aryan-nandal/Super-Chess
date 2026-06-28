@@ -10,3 +10,6 @@ export 'square.dart';
 export 'move.dart';
 export 'position.dart';
 export 'move_generation.dart';
+export 'san.dart';
+export 'outcome.dart';
+export 'uci_engine.dart';
