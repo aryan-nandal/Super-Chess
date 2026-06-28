@@ -96,6 +96,9 @@ class ChessBoardView extends StatelessWidget {
     final piece = position.pieceAt(square);
     final isSelected = selected == square;
     final isTarget = targets.contains(square);
+    final isEnPassantCapture = position.enPassant == square &&
+        selected != null &&
+        position.pieceAt(selected!)?.role == PieceRole.pawn;
     final isLastMove = lastMove != null &&
         (square == lastMove!.from || square == lastMove!.to);
     final isCheck = checkSquare == square;
@@ -129,7 +132,7 @@ class ChessBoardView extends StatelessWidget {
           if (isTarget)
             _TargetMarker(
               key: ValueKey('target_${square.name}'),
-              isCapture: piece != null,
+              isCapture: piece != null || isEnPassantCapture,
               color: colors.target,
             ),
         ],
