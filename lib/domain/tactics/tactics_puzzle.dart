@@ -26,4 +26,25 @@ class TacticsPuzzle {
     this.rating = 0,
     this.themes = const [],
   });
+
+  /// Decodes the bundled JSON shape (`moves` is the space-separated UCI line,
+  /// matching the Lichess dataset and the content DB's `movesUci` column).
+  factory TacticsPuzzle.fromJson(Map<String, dynamic> json) => TacticsPuzzle(
+    id: json['id'] as String,
+    fen: json['fen'] as String,
+    solution: (json['moves'] as String)
+        .split(' ')
+        .where((s) => s.isNotEmpty)
+        .toList(),
+    rating: (json['rating'] as num?)?.toInt() ?? 0,
+    themes: (json['themes'] as List?)?.cast<String>() ?? const [],
+  );
+
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'fen': fen,
+    'moves': solution.join(' '),
+    'rating': rating,
+    'themes': themes,
+  };
 }

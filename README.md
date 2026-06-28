@@ -36,6 +36,12 @@ The content database (`lib/data/content`) uses Drift, whose generated code
 dart run build_runner build --delete-conflicting-outputs
 ```
 
+The content DB is seeded (once, idempotently) by `PuzzleSeeder` from a bundled
+puzzle library under `assets/puzzles/` — wiring it into startup is still
+pending. That library is curated offline from the CC0 Lichess puzzle database
+via `tool/curate_puzzles.dart`; see
+[`assets/puzzles/README.md`](assets/puzzles/README.md) for regenerating it.
+
 ## Getting Started
 
 A few resources to get you started if this is your first Flutter project:

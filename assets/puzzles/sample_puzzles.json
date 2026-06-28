@@ -1,0 +1,23 @@
+[
+  {
+    "id": "sample-backrank",
+    "fen": "6k1/p4ppp/8/8/8/8/4R3/6K1 b - - 0 1",
+    "moves": "a7a6 e2e8",
+    "rating": 900,
+    "themes": ["mateIn1", "backRankMate"]
+  },
+  {
+    "id": "sample-queenmate",
+    "fen": "7k/8/5Q1K/8/8/8/8/8 b - - 0 1",
+    "moves": "h8g8 f6g7",
+    "rating": 700,
+    "themes": ["mateIn1", "queenMate"]
+  },
+  {
+    "id": "sample-hanging-rook",
+    "fen": "4k3/8/8/3r4/8/3Q4/8/4K3 b - - 0 1",
+    "moves": "e8f8 d3d5",
+    "rating": 800,
+    "themes": ["hangingPiece"]
+  }
+]
