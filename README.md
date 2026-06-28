@@ -29,6 +29,13 @@ Run the tests with:
 flutter test
 ```
 
+The content database (`lib/data/content`) uses Drift, whose generated code
+(`*.g.dart`) is committed. After changing a table or query, regenerate it with:
+
+```sh
+dart run build_runner build --delete-conflicting-outputs
+```
+
 ## Getting Started
 
 A few resources to get you started if this is your first Flutter project:
