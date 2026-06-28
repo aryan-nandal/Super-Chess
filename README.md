@@ -13,6 +13,10 @@ Super Chess — the teaching-first chess gym.
 - **Full chess rules** — legal move generation, check/checkmate, stalemate,
   fifty-move rule, threefold repetition, and insufficient-material draws,
   surfaced as a live status label above the board.
+- **Tactics trainer** — a named-motif puzzle gym (open it from the board
+  screen's puzzle button). It presents a random puzzle, labels its motif (mate
+  in 1/2, fork, pin, skewer, back-rank mate, …), validates your moves against
+  the solution line, and offers **Try again** / **Skip** / **Next puzzle**.
 
 Promotion currently defaults to a queen; an explicit picker is planned.
 
@@ -29,6 +33,14 @@ Run the tests with:
 flutter test
 ```
 
+At startup the app loads the bundled puzzle library under `assets/puzzles/`
+into a cross-platform in-memory repository (`InMemoryPuzzleRepository`, no
+SQLite) that backs the tactics trainer. The shipping bundle is currently the
+hand-authored `sample_puzzles.json` placeholder, used until the curated CC0
+Lichess set is bundled. That curated library is produced offline from the CC0
+Lichess puzzle database via `tool/curate_puzzles.dart`; see
+[`assets/puzzles/README.md`](assets/puzzles/README.md) for regenerating it.
+
 The content database (`lib/data/content`) uses Drift, whose generated code
 (`*.g.dart`) is committed. After changing a table or query, regenerate it with:
 
@@ -36,11 +48,9 @@ The content database (`lib/data/content`) uses Drift, whose generated code
 dart run build_runner build --delete-conflicting-outputs
 ```
 
-The content DB is seeded (once, idempotently) by `PuzzleSeeder` from a bundled
-puzzle library under `assets/puzzles/` — wiring it into startup is still
-pending. That library is curated offline from the CC0 Lichess puzzle database
-via `tool/curate_puzzles.dart`; see
-[`assets/puzzles/README.md`](assets/puzzles/README.md) for regenerating it.
+The Drift content DB is the persisted, scalable alternative behind the same
+`PuzzleRepository` interface; `PuzzleSeeder` seeds it (once, idempotently) from
+the same bundled library, but seeding is not yet wired into startup.
 
 ## Getting Started
 

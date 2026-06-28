@@ -1,8 +1,10 @@
 import 'tactics_puzzle.dart';
 
 /// Read-only access to the bundled tactics-puzzle library (the curated CC0
-/// Lichess subset). Pure domain interface — implemented in the data layer
-/// (Drift), so the trainer/UI never depend on the storage engine.
+/// Lichess subset). Pure domain interface, so the trainer/UI never depend on
+/// the storage engine. Implemented by `InMemoryPuzzleRepository` (the
+/// cross-platform default, loaded from the bundled JSON) and by the data
+/// layer's Drift repository (the persisted, scalable alternative).
 abstract class PuzzleRepository {
   /// The puzzle with [id], or `null` if absent.
   Future<TacticsPuzzle?> byId(String id);
