@@ -43,7 +43,10 @@ class TacticsScreen extends ConsumerWidget {
   }
 
   Widget _body(
-      BuildContext context, TacticsUiState state, TacticsController controller) {
+    BuildContext context,
+    TacticsUiState state,
+    TacticsController controller,
+  ) {
     switch (state.status) {
       case TacticsStatus.loading:
         return const Center(child: CircularProgressIndicator());
@@ -57,7 +60,10 @@ class TacticsScreen extends ConsumerWidget {
   }
 
   Widget _puzzle(
-      BuildContext context, TacticsUiState state, TacticsController controller) {
+    BuildContext context,
+    TacticsUiState state,
+    TacticsController controller,
+  ) {
     final position = state.position!;
     final theme = Theme.of(context);
     final inCheck = isCheck(position);
@@ -98,8 +104,9 @@ class TacticsScreen extends ConsumerWidget {
                 selected: state.selected,
                 targets: state.targets,
                 lastMove: state.lastMove,
-                checkSquare:
-                    inCheck ? kingSquareOf(position, position.turn) : null,
+                checkSquare: inCheck
+                    ? kingSquareOf(position, position.turn)
+                    : null,
                 onSquareTap: controller.onSquareTap,
               ),
             ),
@@ -137,8 +144,7 @@ class TacticsScreen extends ConsumerWidget {
       case TacticsStatus.failed:
         return '✗ ${state.feedback ?? 'Try again'}';
       case TacticsStatus.solving:
-        final side =
-            state.playerColor == PieceColor.white ? 'White' : 'Black';
+        final side = state.playerColor == PieceColor.white ? 'White' : 'Black';
         return state.feedback ?? '$side to play — find the best move';
       case TacticsStatus.loading:
       case TacticsStatus.empty:

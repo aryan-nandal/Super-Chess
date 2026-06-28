@@ -38,9 +38,9 @@ class _BoardScreenState extends ConsumerState<BoardScreen> {
             key: const ValueKey('open_tactics'),
             icon: const Icon(Icons.extension),
             tooltip: 'Tactics',
-            onPressed: () => Navigator.of(context).push(
-              MaterialPageRoute(builder: (_) => const TacticsScreen()),
-            ),
+            onPressed: () => Navigator.of(
+              context,
+            ).push(MaterialPageRoute(builder: (_) => const TacticsScreen())),
           ),
         ],
       ),

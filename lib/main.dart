@@ -12,10 +12,12 @@ import 'features/tactics/tactics_controller.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final repository = await _loadPuzzleRepository();
-  runApp(ProviderScope(
-    overrides: [puzzleRepositoryProvider.overrideWithValue(repository)],
-    child: const SuperChessApp(),
-  ));
+  runApp(
+    ProviderScope(
+      overrides: [puzzleRepositoryProvider.overrideWithValue(repository)],
+      child: const SuperChessApp(),
+    ),
+  );
 }
 
 /// Loads the bundled puzzle library into the cross-platform in-memory

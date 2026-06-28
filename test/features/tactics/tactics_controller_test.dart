@@ -14,10 +14,13 @@ const _mate = TacticsPuzzle(
 );
 
 ProviderContainer _container(List<TacticsPuzzle> puzzles) {
-  final c = ProviderContainer(overrides: [
-    puzzleRepositoryProvider
-        .overrideWithValue(InMemoryPuzzleRepository(puzzles)),
-  ]);
+  final c = ProviderContainer(
+    overrides: [
+      puzzleRepositoryProvider.overrideWithValue(
+        InMemoryPuzzleRepository(puzzles),
+      ),
+    ],
+  );
   addTearDown(c.dispose);
   return c;
 }
@@ -37,8 +40,10 @@ void main() {
     final s = await _loaded(c);
     expect(s.status, TacticsStatus.solving);
     expect(s.puzzle!.id, 'm1');
-    expect(s.position!.pieceAt(Square.parse('a6')),
-        const Piece(PieceColor.black, PieceRole.pawn)); // setup applied
+    expect(
+      s.position!.pieceAt(Square.parse('a6')),
+      const Piece(PieceColor.black, PieceRole.pawn),
+    ); // setup applied
     expect(s.playerColor, PieceColor.white);
   });
 

@@ -13,20 +13,26 @@ const _mate = TacticsPuzzle(
   themes: ['mateIn1', 'backRankMate'],
 );
 
-Future<void> _pumpLoaded(WidgetTester tester, List<TacticsPuzzle> puzzles) async {
+Future<void> _pumpLoaded(
+  WidgetTester tester,
+  List<TacticsPuzzle> puzzles,
+) async {
   await tester.pumpWidget(
     ProviderScope(
       overrides: [
-        puzzleRepositoryProvider
-            .overrideWithValue(InMemoryPuzzleRepository(puzzles)),
+        puzzleRepositoryProvider.overrideWithValue(
+          InMemoryPuzzleRepository(puzzles),
+        ),
       ],
       child: const MaterialApp(home: TacticsScreen()),
     ),
   );
   // Let the async load resolve and rebuild off the loading spinner.
-  for (var i = 0;
-      i < 10 && find.byKey(const ValueKey('tactics_motif')).evaluate().isEmpty;
-      i++) {
+  for (
+    var i = 0;
+    i < 10 && find.byKey(const ValueKey('tactics_motif')).evaluate().isEmpty;
+    i++
+  ) {
     await tester.pump(const Duration(milliseconds: 10));
   }
 }

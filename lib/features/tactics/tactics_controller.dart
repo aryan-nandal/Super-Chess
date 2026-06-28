@@ -69,7 +69,9 @@ class TacticsController extends Notifier<TacticsUiState> {
     state = puzzle == null
         ? const TacticsUiState(status: TacticsStatus.empty)
         : TacticsUiState(
-            status: TacticsStatus.solving, attempt: TacticsAttempt(puzzle));
+            status: TacticsStatus.solving,
+            attempt: TacticsAttempt(puzzle),
+          );
   }
 
   /// Loads a fresh puzzle.
@@ -83,7 +85,9 @@ class TacticsController extends Notifier<TacticsUiState> {
     final puzzle = state.puzzle;
     if (puzzle == null) return;
     state = TacticsUiState(
-        status: TacticsStatus.solving, attempt: TacticsAttempt(puzzle));
+      status: TacticsStatus.solving,
+      attempt: TacticsAttempt(puzzle),
+    );
   }
 
   /// Handles a tap: select a piece, move to a legal target, reselect, or clear.
@@ -120,9 +124,9 @@ class TacticsController extends Notifier<TacticsUiState> {
 
   void _play(Square from, Square to) {
     final attempt = state.attempt!;
-    final candidates = generateLegalMoves(attempt.position)
-        .where((m) => m.from == from && m.to == to)
-        .toList();
+    final candidates = generateLegalMoves(
+      attempt.position,
+    ).where((m) => m.from == from && m.to == to).toList();
     if (candidates.isEmpty) {
       _solving(selected: null);
       return;
@@ -138,17 +142,22 @@ class TacticsController extends Notifier<TacticsUiState> {
     switch (attempt.playUserMove(move)) {
       case MoveOutcome.solved:
         state = TacticsUiState(
-            status: TacticsStatus.solved, attempt: attempt, feedback: 'Solved!');
+          status: TacticsStatus.solved,
+          attempt: attempt,
+          feedback: 'Solved!',
+        );
       case MoveOutcome.correct:
         state = TacticsUiState(
-            status: TacticsStatus.solving,
-            attempt: attempt,
-            feedback: 'Correct — keep going');
+          status: TacticsStatus.solving,
+          attempt: attempt,
+          feedback: 'Correct — keep going',
+        );
       case MoveOutcome.incorrect:
         state = TacticsUiState(
-            status: TacticsStatus.failed,
-            attempt: attempt,
-            feedback: 'Not the move — try again');
+          status: TacticsStatus.failed,
+          attempt: attempt,
+          feedback: 'Not the move — try again',
+        );
     }
   }
 

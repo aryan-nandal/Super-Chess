@@ -12,8 +12,8 @@ class InMemoryPuzzleRepository implements PuzzleRepository {
   final Random _random;
 
   InMemoryPuzzleRepository(List<TacticsPuzzle> puzzles, {Random? random})
-      : _puzzles = List.unmodifiable(puzzles),
-        _random = random ?? Random();
+    : _puzzles = List.unmodifiable(puzzles),
+      _random = random ?? Random();
 
   @override
   Future<TacticsPuzzle?> byId(String id) async {
@@ -51,8 +51,10 @@ class InMemoryPuzzleRepository implements PuzzleRepository {
       _puzzles.expand((p) => p.themes).toSet().toList()..sort();
 
   Iterable<TacticsPuzzle> _tagged(String theme, int minRating, int maxRating) =>
-      _puzzles.where((p) =>
-          p.themes.contains(theme) &&
-          p.rating >= minRating &&
-          p.rating <= maxRating);
+      _puzzles.where(
+        (p) =>
+            p.themes.contains(theme) &&
+            p.rating >= minRating &&
+            p.rating <= maxRating,
+      );
 }
