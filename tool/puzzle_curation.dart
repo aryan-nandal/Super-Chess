@@ -81,5 +81,6 @@ List<TacticsPuzzle> curate(
 
 /// Serializes curated puzzles to the bundled JSON shape (pretty-printed).
 String curatedToJson(List<TacticsPuzzle> puzzles) =>
-    const JsonEncoder.withIndent('  ')
-        .convert(puzzles.map((p) => p.toJson()).toList());
+    const JsonEncoder.withIndent(
+      '  ',
+    ).convert(puzzles.map((p) => p.toJson()).toList());

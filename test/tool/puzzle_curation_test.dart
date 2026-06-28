@@ -60,8 +60,13 @@ void main() {
     test('per-bucket cap keeps the most-played', () {
       // fork@1400 band has 00001 (500 plays) and 00002 (800). perBucket:1 keeps
       // the more-played 00002 for that bucket.
-      final result = curate(parsed(),
-          perBucket: 1, minPopularity: 80, minNbPlays: 100, themes: {'fork'});
+      final result = curate(
+        parsed(),
+        perBucket: 1,
+        minPopularity: 80,
+        minNbPlays: 100,
+        themes: {'fork'},
+      );
       expect(result.map((p) => p.id), contains('00002'));
       expect(result.map((p) => p.id), isNot(contains('00004'))); // no fork tag
     });

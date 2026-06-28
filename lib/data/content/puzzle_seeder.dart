@@ -77,8 +77,9 @@ class PuzzleSeeder {
   /// future content-version sentinel (out of scope for this slice).
   Future<bool> _isPopulated() async {
     final count = db.puzzles.id.count();
-    final row =
-        await (db.selectOnly(db.puzzles)..addColumns([count])).getSingle();
+    final row = await (db.selectOnly(
+      db.puzzles,
+    )..addColumns([count])).getSingle();
     return (row.read(count) ?? 0) > 0;
   }
 }
