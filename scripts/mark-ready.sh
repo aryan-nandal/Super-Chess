@@ -62,6 +62,18 @@ if [[ "$MODE" != "--no-nm" ]]; then
   status=$(no-mistakes axi status 2>/dev/null || true)
   grep -Eq "branch: \"?${branch}\"?" <<<"$status" || \
     fail "no completed no-mistakes run for '$branch' — run the gate before promoting"
+
+  # A run that has not reached a terminal `outcome:` line is still in progress —
+  # running, or parked at a gate awaiting `axi respond`. That is NOT a failure:
+  # treating "not finished yet" as "not a pass" paints the PR red for a
+  # transient condition (and the red status sticks even after the run later
+  # passes on the same commit). Report it as `pending` and stop without
+  # promoting, so the gate can simply be re-run once the run terminates.
+  grep -Eq "outcome: (passed|checks-passed|failed|cancelled)" <<<"$status" || {
+    echo "⏳ no-mistakes run for '$branch' has not finished (no terminal outcome yet) — not promoting" >&2
+    post_status pending "no-mistakes run in progress"
+    exit 1
+  }
   grep -Eq "outcome: (passed|checks-passed)" <<<"$status" || \
     fail "no-mistakes outcome is not a pass"
   grep -q "review,completed" <<<"$status" || \
