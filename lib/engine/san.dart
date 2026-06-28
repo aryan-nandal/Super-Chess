@@ -47,6 +47,27 @@ String sanOf(Position pos, Move move) {
   return body;
 }
 
+/// Resolves a SAN token (e.g. `Nf3`, `exd5`, `O-O`, `e8=Q+`, `Raxe1`) to the
+/// matching legal [Move] in [pos]. Check/mate suffixes (`+`, `#`), annotation
+/// glyphs (`!`, `?`), and `0-0`-style castling are tolerated.
+///
+/// Throws [FormatException] if no legal move matches.
+Move sanToMove(Position pos, String san) {
+  final target = _normalizeSan(san);
+  for (final move in generateLegalMoves(pos)) {
+    if (_normalizeSan(sanOf(pos, move)) == target) return move;
+  }
+  throw FormatException('illegal or unrecognized SAN "$san"');
+}
+
+/// Strips suffixes/annotations and normalizes castling so two renderings of the
+/// same move compare equal.
+String _normalizeSan(String san) => san
+    .trim()
+    .replaceAll(RegExp(r'\s*e\.p\.$'), '')
+    .replaceAll(RegExp(r'[+#!?]'), '')
+    .replaceAll('0', 'O'); // 0-0 / 0-0-0 -> O-O / O-O-O
+
 /// The minimal disambiguation string (file, rank, or full square) needed when
 /// another piece of the same role can also reach the destination.
 String _disambiguation(Position pos, Move move, Piece piece) {
