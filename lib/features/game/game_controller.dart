@@ -14,13 +14,16 @@ class GameUiState {
   /// Legal destination squares from [selected] (empty when nothing selected).
   final List<Square> targets;
 
-  const GameUiState({required this.game, this.selected, this.targets = const []});
+  const GameUiState({
+    required this.game,
+    this.selected,
+    this.targets = const [],
+  });
 
   Position get position => game.position;
 
   /// The most recent move played, or `null` at the start.
-  Move? get lastMove =>
-      game.moveHistory.isEmpty ? null : game.moveHistory.last;
+  Move? get lastMove => game.moveHistory.isEmpty ? null : game.moveHistory.last;
 
   GameOutcome get outcome => game.outcome;
 
@@ -92,8 +95,9 @@ class GameController extends Notifier<GameUiState> {
 
   void _play(Square from, Square to) {
     final game = state.game;
-    final candidates =
-        game.legalMoves.where((m) => m.from == from && m.to == to).toList();
+    final candidates = game.legalMoves
+        .where((m) => m.from == from && m.to == to)
+        .toList();
     if (candidates.isEmpty) {
       _clearSelection();
       return;
@@ -108,5 +112,6 @@ class GameController extends Notifier<GameUiState> {
   }
 }
 
-final gameControllerProvider =
-    NotifierProvider<GameController, GameUiState>(GameController.new);
+final gameControllerProvider = NotifierProvider<GameController, GameUiState>(
+  GameController.new,
+);

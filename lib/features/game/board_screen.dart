@@ -19,9 +19,10 @@ class _BoardScreenState extends ConsumerState<BoardScreen> {
   PieceColor _orientation = PieceColor.white;
 
   void _flip() => setState(
-      () => _orientation = _orientation == PieceColor.white
-          ? PieceColor.black
-          : PieceColor.white);
+    () => _orientation = _orientation == PieceColor.white
+        ? PieceColor.black
+        : PieceColor.white,
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -94,8 +95,7 @@ class _BoardScreenState extends ConsumerState<BoardScreen> {
     if (outcome.isOver) {
       switch (outcome.termination) {
         case GameTermination.checkmate:
-          final winner =
-              outcome.winner == PieceColor.white ? 'White' : 'Black';
+          final winner = outcome.winner == PieceColor.white ? 'White' : 'Black';
           return 'Checkmate — $winner wins';
         case GameTermination.stalemate:
           return 'Draw — stalemate';

@@ -6,13 +6,13 @@ import '../../../engine/engine.dart';
 /// set and are distinguished by paint color, for crisp rendering on any
 /// square).
 String pieceGlyph(PieceRole role) => switch (role) {
-      PieceRole.king => '♚',
-      PieceRole.queen => '♛',
-      PieceRole.rook => '♜',
-      PieceRole.bishop => '♝',
-      PieceRole.knight => '♞',
-      PieceRole.pawn => '♟',
-    };
+  PieceRole.king => '♚',
+  PieceRole.queen => '♛',
+  PieceRole.rook => '♜',
+  PieceRole.bishop => '♝',
+  PieceRole.knight => '♞',
+  PieceRole.pawn => '♟',
+};
 
 /// Color palette for the board. Defaults to a calm classic scheme; the
 /// glassmorphism/neon theming lands in a later polish pass.
@@ -96,10 +96,12 @@ class ChessBoardView extends StatelessWidget {
     final piece = position.pieceAt(square);
     final isSelected = selected == square;
     final isTarget = targets.contains(square);
-    final isEnPassantCapture = position.enPassant == square &&
+    final isEnPassantCapture =
+        position.enPassant == square &&
         selected != null &&
         position.pieceAt(selected!)?.role == PieceRole.pawn;
-    final isLastMove = lastMove != null &&
+    final isLastMove =
+        lastMove != null &&
         (square == lastMove!.from || square == lastMove!.to);
     final isCheck = checkSquare == square;
 
@@ -177,7 +179,11 @@ class _TargetMarker extends StatelessWidget {
   final bool isCapture;
   final Color color;
 
-  const _TargetMarker({super.key, required this.isCapture, required this.color});
+  const _TargetMarker({
+    super.key,
+    required this.isCapture,
+    required this.color,
+  });
 
   @override
   Widget build(BuildContext context) {

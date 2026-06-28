@@ -13,16 +13,22 @@ const List<List<int>> _kingDeltas = [
   [-1, 0], [-1, -1], [0, -1], [1, -1],
 ];
 const List<List<int>> _bishopDirs = [
-  [1, 1], [1, -1], [-1, 1], [-1, -1]
+  [1, 1],
+  [1, -1],
+  [-1, 1],
+  [-1, -1],
 ];
 const List<List<int>> _rookDirs = [
-  [1, 0], [-1, 0], [0, 1], [0, -1]
+  [1, 0],
+  [-1, 0],
+  [0, 1],
+  [0, -1],
 ];
 
 Piece? _at(List<Piece?> board, int file, int rank) =>
     (file < 0 || file > 7 || rank < 0 || rank > 7)
-        ? null
-        : board[rank * 8 + file];
+    ? null
+    : board[rank * 8 + file];
 
 /// Whether [square] is attacked by any piece of color [by] on [board].
 ///
@@ -61,15 +67,21 @@ bool isSquareAttacked(List<Piece?> board, Square square, PieceColor by) {
 
 /// Traces a ray and reports whether the first piece met is a [slider] (or a
 /// queen) of color [by].
-bool _raysHit(List<Piece?> board, int f, int df, int r, int dr, PieceColor by,
-    PieceRole slider) {
+bool _raysHit(
+  List<Piece?> board,
+  int f,
+  int df,
+  int r,
+  int dr,
+  PieceColor by,
+  PieceRole slider,
+) {
   var nf = f + df;
   var nr = r + dr;
   while (nf >= 0 && nf < 8 && nr >= 0 && nr < 8) {
     final p = board[nr * 8 + nf];
     if (p != null) {
-      return p.color == by &&
-          (p.role == slider || p.role == PieceRole.queen);
+      return p.color == by && (p.role == slider || p.role == PieceRole.queen);
     }
     nf += df;
     nr += dr;
@@ -93,7 +105,10 @@ Square kingSquareOf(Position pos, PieceColor color) =>
 
 /// Whether the side to move in [pos] is in check.
 bool isCheck(Position pos) => isSquareAttacked(
-    pos.board, _kingSquare(pos.board, pos.turn), pos.turn.opposite);
+  pos.board,
+  _kingSquare(pos.board, pos.turn),
+  pos.turn.opposite,
+);
 
 /// All fully-legal moves for the side to move in [pos].
 List<Move> generateLegalMoves(Position pos) {
@@ -149,8 +164,14 @@ List<Move> _pseudoLegalMoves(Position pos) {
   return moves;
 }
 
-void _addStep(List<Piece?> board, PieceColor us, Square from, int nf, int nr,
-    List<Move> out) {
+void _addStep(
+  List<Piece?> board,
+  PieceColor us,
+  Square from,
+  int nf,
+  int nr,
+  List<Move> out,
+) {
   if (nf < 0 || nf > 7 || nr < 0 || nr > 7) return;
   final target = board[nr * 8 + nf];
   if (target == null || target.color != us) {
@@ -158,8 +179,13 @@ void _addStep(List<Piece?> board, PieceColor us, Square from, int nf, int nr,
   }
 }
 
-void _slidingMoves(List<Piece?> board, PieceColor us, Square from,
-    List<List<int>> dirs, List<Move> out) {
+void _slidingMoves(
+  List<Piece?> board,
+  PieceColor us,
+  Square from,
+  List<List<int>> dirs,
+  List<Move> out,
+) {
   for (final d in dirs) {
     var nf = from.file + d[0];
     var nr = from.rank + d[1];
@@ -231,8 +257,9 @@ void _castlingMoves(Position pos, Square from, List<Move> out) {
   final opp = us.opposite;
   if (isSquareAttacked(board, from, opp)) return;
 
-  final kingSide =
-      us == PieceColor.white ? pos.castling.whiteKingSide : pos.castling.blackKingSide;
+  final kingSide = us == PieceColor.white
+      ? pos.castling.whiteKingSide
+      : pos.castling.blackKingSide;
   final queenSide = us == PieceColor.white
       ? pos.castling.whiteQueenSide
       : pos.castling.blackQueenSide;

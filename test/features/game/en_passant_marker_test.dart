@@ -37,20 +37,21 @@ Future<void> _loadChessFont() async {
 }
 
 Widget _host(Widget child) => MaterialApp(
-      home: Scaffold(
-        backgroundColor: const Color(0xFF1A1A2E),
-        body: Center(
-          child: DefaultTextStyle(
-            style: const TextStyle(fontFamily: 'ChessFont'),
-            child: SizedBox(width: 480, height: 480, child: child),
-          ),
-        ),
+  home: Scaffold(
+    backgroundColor: const Color(0xFF1A1A2E),
+    body: Center(
+      child: DefaultTextStyle(
+        style: const TextStyle(fontFamily: 'ChessFont'),
+        child: SizedBox(width: 480, height: 480, child: child),
       ),
-    );
+    ),
+  ),
+);
 
 Future<void> _capture(WidgetTester tester, Key boundaryKey, String name) async {
-  final boundary =
-      tester.renderObject<RenderRepaintBoundary>(find.byKey(boundaryKey));
+  final boundary = tester.renderObject<RenderRepaintBoundary>(
+    find.byKey(boundaryKey),
+  );
   // toImage / toByteData drive the real engine, so they must run outside the
   // fake-async test zone.
   await tester.runAsync(() async {
@@ -73,7 +74,9 @@ BoxDecoration _markerDecoration(WidgetTester tester, String targetKey) {
 }
 
 void main() {
-  testWidgets('en-passant target square renders a capture ring', (tester) async {
+  testWidgets('en-passant target square renders a capture ring', (
+    tester,
+  ) async {
     await _loadChessFont();
     tester.view.physicalSize = const Size(540, 540);
     tester.view.devicePixelRatio = 1.0;
@@ -83,19 +86,21 @@ void main() {
     final position = Position.fromFen(_enPassantFen);
     const boundaryKey = ValueKey('ep_board');
 
-    await tester.pumpWidget(_host(
-      RepaintBoundary(
-        key: boundaryKey,
-        child: ChessBoardView(
-          position: position,
-          selected: Square.parse('e5'),
-          // The two legal moves for the e5 pawn: a quiet push to e6 and the
-          // en-passant capture onto the empty d6.
-          targets: [Square.parse('e6'), Square.parse('d6')],
-          onSquareTap: (_) {},
+    await tester.pumpWidget(
+      _host(
+        RepaintBoundary(
+          key: boundaryKey,
+          child: ChessBoardView(
+            position: position,
+            selected: Square.parse('e5'),
+            // The two legal moves for the e5 pawn: a quiet push to e6 and the
+            // en-passant capture onto the empty d6.
+            targets: [Square.parse('e6'), Square.parse('d6')],
+            onSquareTap: (_) {},
+          ),
         ),
       ),
-    ));
+    );
     await tester.pumpAndSettle();
 
     // Both target squares are marked.
@@ -107,35 +112,44 @@ void main() {
     // square (and unlike the small solid dot used for a quiet move).
     final d6 = _markerDecoration(tester, 'target_d6');
     expect(d6.shape, BoxShape.circle);
-    expect(d6.color, Colors.transparent,
-        reason: 'en-passant capture marker should be a hollow ring');
-    expect(d6.border, isNotNull,
-        reason: 'en-passant capture marker should have a ring border');
+    expect(
+      d6.color,
+      Colors.transparent,
+      reason: 'en-passant capture marker should be a hollow ring',
+    );
+    expect(
+      d6.border,
+      isNotNull,
+      reason: 'en-passant capture marker should have a ring border',
+    );
 
     // The quiet push to e6 stays a small solid dot (filled, no border).
     final e6 = _markerDecoration(tester, 'target_e6');
     expect(e6.color, isNot(Colors.transparent));
-    expect(e6.border, isNull,
-        reason: 'a quiet move should be a solid dot, not a ring');
+    expect(
+      e6.border,
+      isNull,
+      reason: 'a quiet move should be a solid dot, not a ring',
+    );
 
     await _capture(tester, boundaryKey, 'en_passant_capture_ring.png');
   });
 
-  testWidgets('without a selected pawn the e.p. square shows no ring',
-      (tester) async {
+  testWidgets('without a selected pawn the e.p. square shows no ring', (
+    tester,
+  ) async {
     await _loadChessFont();
     final position = Position.fromFen(_enPassantFen);
     const boundaryKey = ValueKey('ep_board_unselected');
 
-    await tester.pumpWidget(_host(
-      RepaintBoundary(
-        key: boundaryKey,
-        child: ChessBoardView(
-          position: position,
-          onSquareTap: (_) {},
+    await tester.pumpWidget(
+      _host(
+        RepaintBoundary(
+          key: boundaryKey,
+          child: ChessBoardView(position: position, onSquareTap: (_) {}),
         ),
       ),
-    ));
+    );
     await tester.pumpAndSettle();
 
     // Nothing selected => no target markers at all on d6.
