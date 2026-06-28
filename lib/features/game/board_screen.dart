@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../domain/game.dart';
 import '../../engine/engine.dart';
+import '../tactics/tactics_screen.dart';
 import 'game_controller.dart';
 import 'widgets/chess_board.dart';
 
@@ -30,7 +31,19 @@ class _BoardScreenState extends ConsumerState<BoardScreen> {
     final controller = ref.read(gameControllerProvider.notifier);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Super Chess')),
+      appBar: AppBar(
+        title: const Text('Super Chess'),
+        actions: [
+          IconButton(
+            key: const ValueKey('open_tactics'),
+            icon: const Icon(Icons.extension),
+            tooltip: 'Tactics',
+            onPressed: () => Navigator.of(
+              context,
+            ).push(MaterialPageRoute(builder: (_) => const TacticsScreen())),
+          ),
+        ],
+      ),
       body: SafeArea(
         child: Column(
           children: [

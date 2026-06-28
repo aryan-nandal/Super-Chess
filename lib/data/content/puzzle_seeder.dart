@@ -12,8 +12,9 @@ import 'content_database.dart';
 /// the CC0 Lichess DB) is bundled as an asset and loaded once. Seeding is
 /// idempotent — it no-ops when the library is already populated.
 class PuzzleSeeder {
-  /// Tiny hand-authored dev/test set. For development and tests only — never
-  /// pass this as the production library.
+  /// Tiny hand-authored sample set, currently used as the placeholder library
+  /// (in dev, tests, and the shipping app) until the curated CC0 Lichess set is
+  /// bundled. It must not be shipped as the FINAL library.
   static const sampleAsset = 'assets/puzzles/sample_puzzles.json';
 
   final ContentDatabase db;
