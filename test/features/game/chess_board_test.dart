@@ -21,13 +21,34 @@ void main() {
     expect(cells, findsNWidgets(64));
   });
 
+  Finder pieces(bool Function(Piece) test) =>
+      find.byWidgetPredicate((w) => w is PieceShape && test(w.piece));
+
   testWidgets('renders the starting pieces', (tester) async {
     await tester.pumpWidget(
       _host(ChessBoardView(position: Position.initial, onSquareTap: (_) {})),
     );
-    expect(find.text(pieceGlyph(PieceRole.pawn)), findsNWidgets(16));
-    expect(find.text(pieceGlyph(PieceRole.king)), findsNWidgets(2));
-    expect(find.text(pieceGlyph(PieceRole.queen)), findsNWidgets(2));
+    expect(pieces((p) => true), findsNWidgets(32));
+    expect(pieces((p) => p.role == PieceRole.pawn), findsNWidgets(16));
+    expect(pieces((p) => p.role == PieceRole.king), findsNWidgets(2));
+    expect(pieces((p) => p == const Piece(PieceColor.white, PieceRole.queen)),
+        findsOneWidget);
+  });
+
+  testWidgets('white and black pieces keep their own colors', (tester) async {
+    // The reported bug: pieces collapsed to one color after a move because the
+    // glyph font ignored the tint. Vector pieces resolve color directly.
+    await tester.pumpWidget(
+      _host(ChessBoardView(position: Position.initial, onSquareTap: (_) {})),
+    );
+    const colors = ChessBoardColors();
+    final white =
+        pieceFillStroke(const Piece(PieceColor.white, PieceRole.pawn), colors);
+    final black =
+        pieceFillStroke(const Piece(PieceColor.black, PieceRole.pawn), colors);
+    expect(white.fill, colors.whitePiece);
+    expect(black.fill, colors.blackPiece);
+    expect(white.fill, isNot(black.fill));
   });
 
   testWidgets('reports the tapped square', (tester) async {

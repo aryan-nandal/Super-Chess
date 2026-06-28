@@ -10,8 +10,8 @@ void main() {
     await tester.pumpWidget(const ProviderScope(child: SuperChessApp()));
     expect(find.text('Super Chess'), findsOneWidget);
     expect(find.text('White to move'), findsOneWidget);
-    // 32 pieces on the starting board.
-    final pieces = find.byWidgetPredicate((w) => w is ChessBoardView);
-    expect(pieces, findsOneWidget);
+    // The board is present (its contents are covered by chess_board_test).
+    final board = find.byWidgetPredicate((w) => w is ChessBoardView);
+    expect(board, findsOneWidget);
   });
 }

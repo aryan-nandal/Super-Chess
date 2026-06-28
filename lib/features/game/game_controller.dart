@@ -3,8 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../domain/game.dart';
 import '../../engine/engine.dart';
 
-/// Immutable view-state for the board feature. The mutable [game] lives inside;
-/// a fresh [GameUiState] is emitted on every change so Riverpod notifies.
+/// A view snapshot for the board feature wrapping the mutable [game]. The
+/// snapshot itself is not deep-immutable — [game] mutates in place on play/undo
+/// — but a fresh [GameUiState] instance is emitted on every change so Riverpod
+/// notifies its listeners.
 class GameUiState {
   final Game game;
 
@@ -43,6 +45,10 @@ class GameController extends Notifier<GameUiState> {
   /// Handles a tap on [square]: selects a piece, moves to a legal target,
   /// reselects another own piece, or clears the selection.
   void selectOrMove(Square square) {
+    if (state.outcome.isOver) {
+      _clearSelection(); // the game is finished — freeze the board
+      return;
+    }
     final selected = state.selected;
     if (selected == null) {
       _trySelect(square);
