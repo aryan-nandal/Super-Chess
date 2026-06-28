@@ -18,6 +18,7 @@ dart run tool/curate_puzzles.dart lichess_db_puzzle.csv \
 #   args: <input.csv> <output.json> [perBucket] [minNbPlays] [minPopularity]
 ```
 
-The app seeds the read-only content DB from the bundled JSON on first launch
-(`PuzzleSeeder`, idempotent). The Lichess data is CC0, so no attribution is
-required, but we credit it anyway.
+The app will seed the read-only content DB from the bundled JSON once
+`PuzzleSeeder` is wired into startup (next: the tactics screen). Seeding is
+idempotent. The Lichess data is CC0, so no attribution is required, but we
+credit it anyway.

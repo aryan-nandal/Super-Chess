@@ -12,16 +12,21 @@ import 'content_database.dart';
 /// the CC0 Lichess DB) is bundled as an asset and loaded once. Seeding is
 /// idempotent — it no-ops when the library is already populated.
 class PuzzleSeeder {
-  static const defaultAsset = 'assets/puzzles/sample_puzzles.json';
+  /// Tiny hand-authored dev/test set. For development and tests only — never
+  /// pass this as the production library.
+  static const sampleAsset = 'assets/puzzles/sample_puzzles.json';
 
   final ContentDatabase db;
 
   PuzzleSeeder(this.db);
 
   /// Loads [assetPath] via [bundle] (defaults to [rootBundle]) and seeds it.
+  ///
+  /// [assetPath] is required so the production library must be named
+  /// explicitly at the call site; pass [sampleAsset] only for dev/tests.
   Future<int> seedFromAsset({
+    required String assetPath,
     AssetBundle? bundle,
-    String assetPath = defaultAsset,
   }) async {
     final json = await (bundle ?? rootBundle).loadString(assetPath);
     return seedFromJson(json);
@@ -29,6 +34,12 @@ class PuzzleSeeder {
 
   /// Seeds from a decoded JSON array of puzzles. Returns the number inserted
   /// (0 if the library was already populated).
+  ///
+  /// Seeding is populate-once: it no-ops as soon as the library contains any
+  /// puzzle (see [_isPopulated]). Refreshing the bundled library across future
+  /// releases is therefore out of scope for this slice — it will require a
+  /// content-version sentinel to force a re-seed, which is a deliberate,
+  /// documented deferral.
   Future<int> seedFromJson(String json) async {
     if (await _isPopulated()) return 0;
 
@@ -61,6 +72,9 @@ class PuzzleSeeder {
     return puzzles.length;
   }
 
+  /// True once any puzzle exists. Seeding is skipped while populated, so a
+  /// changed bundled library will not re-seed an existing install without a
+  /// future content-version sentinel (out of scope for this slice).
   Future<bool> _isPopulated() async {
     final count = db.puzzles.id.count();
     final row =
