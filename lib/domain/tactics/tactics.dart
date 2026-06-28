@@ -4,3 +4,4 @@ library;
 
 export 'tactics_puzzle.dart';
 export 'tactics_attempt.dart';
+export 'puzzle_repository.dart';
