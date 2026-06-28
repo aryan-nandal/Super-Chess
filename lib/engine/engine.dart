@@ -9,3 +9,4 @@ export 'piece.dart';
 export 'square.dart';
 export 'move.dart';
 export 'position.dart';
+export 'move_generation.dart';

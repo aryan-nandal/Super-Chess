@@ -1,3 +1,4 @@
+import 'move.dart';
 import 'piece.dart';
 import 'square.dart';
 
@@ -95,6 +96,106 @@ class Position {
 
   /// The piece on [square], or `null` if empty.
   Piece? pieceAt(Square square) => board[square.index];
+
+  /// Applies [move] and returns the resulting position. The move is assumed to
+  /// be (pseudo-)legal for this position; this method handles captures, en
+  /// passant, castling (including the rook), promotion, castling-rights and
+  /// en-passant-target updates, the halfmove/fullmove clocks, and flips the
+  /// side to move. It does **not** verify king safety — that is the move
+  /// generator's job (see `generateLegalMoves`).
+  Position applyMove(Move move) {
+    final next = List<Piece?>.of(board);
+    final moving = next[move.from.index]!;
+    final us = turn;
+
+    // Capture (may be overwritten below for en passant).
+    Piece? captured = next[move.to.index];
+
+    // Move the piece, applying promotion if any.
+    next[move.to.index] =
+        move.promotion != null ? Piece(us, move.promotion!) : moving;
+    next[move.from.index] = null;
+
+    // En passant: the captured pawn sits beside the destination, on the
+    // moving pawn's origin rank.
+    if (moving.role == PieceRole.pawn &&
+        enPassant != null &&
+        move.to == enPassant &&
+        captured == null) {
+      final capIndex = move.from.rank * 8 + move.to.file;
+      captured = next[capIndex];
+      next[capIndex] = null;
+    }
+
+    // Castling: relocate the rook to the other side of the king.
+    if (moving.role == PieceRole.king &&
+        (move.to.file - move.from.file).abs() == 2) {
+      final rank = move.from.rank;
+      if (move.to.file == 6) {
+        next[rank * 8 + 5] = next[rank * 8 + 7];
+        next[rank * 8 + 7] = null;
+      } else if (move.to.file == 2) {
+        next[rank * 8 + 3] = next[rank * 8 + 0];
+        next[rank * 8 + 0] = null;
+      }
+    }
+
+    // Castling rights: a king move clears both; a rook leaving or being
+    // captured on its home square clears that side.
+    var wk = castling.whiteKingSide;
+    var wq = castling.whiteQueenSide;
+    var bk = castling.blackKingSide;
+    var bq = castling.blackQueenSide;
+    if (moving.role == PieceRole.king) {
+      if (us == PieceColor.white) {
+        wk = false;
+        wq = false;
+      } else {
+        bk = false;
+        bq = false;
+      }
+    }
+    void clearForSquare(Square s) {
+      switch (s.index) {
+        case 0: // a1
+          wq = false;
+        case 7: // h1
+          wk = false;
+        case 56: // a8
+          bq = false;
+        case 63: // h8
+          bk = false;
+      }
+    }
+
+    clearForSquare(move.from);
+    clearForSquare(move.to);
+
+    // En-passant target for the opponent: only after a double pawn push.
+    Square? newEnPassant;
+    if (moving.role == PieceRole.pawn &&
+        (move.to.rank - move.from.rank).abs() == 2) {
+      newEnPassant =
+          Square(((move.from.rank + move.to.rank) ~/ 2) * 8 + move.from.file);
+    }
+
+    final reset = moving.role == PieceRole.pawn || captured != null;
+
+    return Position._(
+      board: List.unmodifiable(next),
+      turn: us.opposite,
+      castling: CastlingRights(
+        whiteKingSide: wk,
+        whiteQueenSide: wq,
+        blackKingSide: bk,
+        blackQueenSide: bq,
+      ),
+      enPassant: newEnPassant,
+      halfmoveClock: reset ? 0 : halfmoveClock + 1,
+      fullmoveNumber:
+          us == PieceColor.black ? fullmoveNumber + 1 : fullmoveNumber,
+    );
+  }
 
   /// Parses a full FEN record (6 space-separated fields).
   factory Position.fromFen(String fen) {
