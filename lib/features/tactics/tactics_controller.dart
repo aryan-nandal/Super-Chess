@@ -127,6 +127,10 @@ class TacticsController extends Notifier<TacticsUiState> {
       _solving(selected: null);
       return;
     }
+    // Promotion auto-selects a queen (no promotion picker yet), so any puzzle
+    // whose solution requires a non-mating underpromotion will auto-fail until
+    // a picker is added — a deliberate deferral; fine for the current sample
+    // set.
     final move = candidates.firstWhere(
       (m) => m.promotion == null || m.promotion == PieceRole.queen,
       orElse: () => candidates.first,
