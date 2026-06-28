@@ -61,14 +61,20 @@ if [[ "$MODE" != "--no-nm" ]]; then
 
   status=$(no-mistakes axi status 2>/dev/null || true)
   grep -Eq "branch: \"?${branch}\"?" <<<"$status" || \
-    fail "no completed no-mistakes run for '$branch' — run the gate before promoting"
-  grep -Eq "outcome: (passed|checks-passed)" <<<"$status" || \
-    fail "no-mistakes outcome is not a pass"
-  grep -q "review,completed" <<<"$status" || \
-    fail "no-mistakes 'review' was skipped — not a real validation (branch already merged?)"
-  grep -q "test,completed" <<<"$status" || \
-    fail "no-mistakes 'test' was skipped — not a real validation (branch already merged?)"
-  echo "no-mistakes: passed (review + test completed)"
+    fail "no no-mistakes run for '$branch' — run the gate before promoting"
+  # Never promote a failed run (terminal 'failed' or any failed step).
+  grep -q "status: failed" <<<"$status" && fail "no-mistakes run failed"
+  grep -q ",failed," <<<"$status" && fail "a no-mistakes step failed"
+  # Require REAL validation: review+test+push+pr must have completed. Skipped
+  # steps mean the branch was already merged / never validated. We key on the
+  # steps (not an 'outcome:' line) because a 'checks-passed' run stays
+  # status:running while its ci step keeps monitoring the PR and prints no
+  # 'outcome:' line.
+  for step in review test push pr; do
+    grep -q "${step},completed" <<<"$status" || \
+      fail "no-mistakes '${step}' not completed — not a real validation (skipped/incomplete)"
+  done
+  echo "no-mistakes: validated (review/test/push/pr completed)"
 else
   echo "no-mistakes: SKIPPED (--no-nm)"
 fi
