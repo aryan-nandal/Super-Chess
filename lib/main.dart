@@ -23,25 +23,24 @@ Future<void> main() async {
 /// Loads the bundled puzzle library into the cross-platform in-memory
 /// repository (no SQLite needed).
 ///
-/// The bundled sample is a temporary placeholder library until the curated CC0
-/// Lichess set (produced by `tool/curate_puzzles.dart` -> `assets/puzzles/
-/// puzzles.json`) is bundled and loaded here instead.
-///
-/// On any load/parse failure this logs a diagnostic and returns an empty
-/// repository so the app still starts and the trainer shows its empty state
-/// rather than a blank screen.
+/// Prefers the curated CC0 Lichess library (`assets/puzzles/puzzles.json`,
+/// produced by `tool/curate_puzzles.dart`) and falls back to the tiny sample if
+/// it's missing/empty. On total failure it returns an empty repository so the
+/// app still starts and the trainer shows its empty state, not a blank screen.
 Future<PuzzleRepository> _loadPuzzleRepository() async {
-  try {
-    final json = await rootBundle.loadString(PuzzleSeeder.sampleAsset);
-    final puzzles = (jsonDecode(json) as List)
-        .cast<Map<String, dynamic>>()
-        .map(TacticsPuzzle.fromJson)
-        .toList();
-    return InMemoryPuzzleRepository(puzzles);
-  } catch (error, stackTrace) {
-    debugPrint('Failed to load puzzle library: $error\n$stackTrace');
-    return InMemoryPuzzleRepository(const []);
+  for (final asset in const [PuzzleSeeder.libraryAsset, PuzzleSeeder.sampleAsset]) {
+    try {
+      final json = await rootBundle.loadString(asset);
+      final puzzles = (jsonDecode(json) as List)
+          .cast<Map<String, dynamic>>()
+          .map(TacticsPuzzle.fromJson)
+          .toList();
+      if (puzzles.isNotEmpty) return InMemoryPuzzleRepository(puzzles);
+    } catch (error, stackTrace) {
+      debugPrint('Puzzle asset "$asset" failed to load: $error\n$stackTrace');
+    }
   }
+  return InMemoryPuzzleRepository(const []);
 }
 
 class SuperChessApp extends StatelessWidget {

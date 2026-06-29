@@ -46,21 +46,25 @@ LichessPuzzleRow? parseLichessRow(String line) {
 /// The lower bound of the rating band [rating] falls in (default width 200).
 int ratingBand(int rating, {int width = 200}) => (rating ~/ width) * width;
 
-/// Curates [rows] into a stratified, quality-filtered subset: drop rows below
-/// the [minPopularity]/[minNbPlays] thresholds, group by `theme × rating band`,
-/// keep the [perBucket] most-played per bucket, de-duplicate by id, and return
-/// rating-ascending. If [themes] is given, only those motifs are kept.
+/// Curates [rows] into a stratified, quality-filtered subset: keep rows inside
+/// the `[minRating, maxRating]` band that clear the [minPopularity]/[minNbPlays]
+/// thresholds, group by `theme × rating band`, keep the [perBucket] most-played
+/// per bucket, de-duplicate by id, and return rating-ascending. If [themes] is
+/// given, only those motifs are kept.
 List<TacticsPuzzle> curate(
   Iterable<LichessPuzzleRow> rows, {
   int perBucket = 50,
   int minNbPlays = 0,
   int minPopularity = 0,
+  int minRating = 0,
+  int maxRating = 4000,
   int bandWidth = 200,
   Set<String>? themes,
 }) {
   final buckets = <String, List<LichessPuzzleRow>>{};
   for (final row in rows) {
     if (row.popularity < minPopularity || row.nbPlays < minNbPlays) continue;
+    if (row.puzzle.rating < minRating || row.puzzle.rating > maxRating) continue;
     final band = ratingBand(row.puzzle.rating, width: bandWidth);
     for (final theme in row.puzzle.themes) {
       if (themes != null && !themes.contains(theme)) continue;
@@ -72,7 +76,18 @@ List<TacticsPuzzle> curate(
   for (final bucket in buckets.values) {
     final byPlays = [...bucket]..sort((a, b) => b.nbPlays.compareTo(a.nbPlays));
     for (final row in byPlays.take(perBucket)) {
-      picked[row.puzzle.id] = row.puzzle;
+      final p = row.puzzle;
+      // When an allowlist is given, keep only those motifs in the output so the
+      // trainer practices clean motifs (not Lichess phase tags).
+      picked[p.id] = themes == null
+          ? p
+          : TacticsPuzzle(
+              id: p.id,
+              fen: p.fen,
+              solution: p.solution,
+              rating: p.rating,
+              themes: p.themes.where(themes.contains).toList(),
+            );
     }
   }
 
