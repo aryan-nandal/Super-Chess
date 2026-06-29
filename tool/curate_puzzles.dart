@@ -49,8 +49,10 @@ Future<void> main(List<String> args) async {
     for (final a in args.where((a) => a.startsWith('--')))
       a.substring(2).split('=').first: a.contains('=') ? a.split('=').last : '',
   };
-  int flagInt(String name, int fallback) =>
-      flags[name] != null ? int.parse(flags[name]!) : fallback;
+  int flagInt(String name, int fallback) {
+    final raw = flags[name];
+    return raw != null && raw.isNotEmpty ? int.parse(raw) : fallback;
+  }
 
   final perBucket = flagInt('per-bucket', 50);
   final minNbPlays = flagInt('min-plays', 100);
@@ -77,8 +79,11 @@ Future<void> main(List<String> args) async {
     }
   }
 
+  final validRows = rows.where((r) => engineValid(r.puzzle)).toList();
+  final droppedInvalid = rows.length - validRows.length;
+
   final curated = curate(
-    rows,
+    validRows,
     perBucket: perBucket,
     minNbPlays: minNbPlays,
     minPopularity: minPopularity,
@@ -86,9 +91,8 @@ Future<void> main(List<String> args) async {
     maxRating: maxRating,
     themes: themes,
   );
-  final valid = curated.where(engineValid).toList();
-  File(positional[1]).writeAsStringSync(curatedToJson(valid));
-  stdout.writeln('Curated ${valid.length} puzzles '
-      '(${curated.length - valid.length} dropped as engine-invalid) '
+  File(positional[1]).writeAsStringSync(curatedToJson(curated));
+  stdout.writeln('Curated ${curated.length} puzzles '
+      '($droppedInvalid dropped as engine-invalid) '
       '-> ${positional[1]}');
 }
