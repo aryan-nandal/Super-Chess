@@ -12,9 +12,12 @@ import 'content_database.dart';
 /// the CC0 Lichess DB) is bundled as an asset and loaded once. Seeding is
 /// idempotent — it no-ops when the library is already populated.
 class PuzzleSeeder {
-  /// Tiny hand-authored sample set, currently used as the placeholder library
-  /// (in dev, tests, and the shipping app) until the curated CC0 Lichess set is
-  /// bundled. It must not be shipped as the FINAL library.
+  /// The curated CC0 Lichess library (`tool/curate_puzzles.dart` output) — the
+  /// real bundled puzzle set the app loads.
+  static const libraryAsset = 'assets/puzzles/puzzles.json';
+
+  /// Tiny hand-authored sample set for dev/tests and as a fallback if the
+  /// curated [libraryAsset] is missing/empty.
   static const sampleAsset = 'assets/puzzles/sample_puzzles.json';
 
   final ContentDatabase db;

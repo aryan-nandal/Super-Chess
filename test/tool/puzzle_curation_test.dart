@@ -77,5 +77,19 @@ void main() {
       expect(result.every((p) => p.themes.contains('fork')), isTrue);
       expect(result.map((p) => p.id), isNot(contains('00004')));
     });
+
+    test('a theme allowlist filters the output themes to the allowlist', () {
+      // 00001 is tagged "fork middlegame" — only the allowlisted motif survives.
+      final result = curate(parsed(), themes: {'fork'});
+      final p = result.firstWhere((p) => p.id == '00001');
+      expect(p.themes, ['fork']);
+    });
+
+    test('rating range drops out-of-band puzzles', () {
+      // 00004 is rated 900; restrict to 1000+ and it's gone.
+      final result = curate(parsed(), minRating: 1000);
+      expect(result.map((p) => p.id), isNot(contains('00004')));
+      expect(result.every((p) => p.rating >= 1000), isTrue);
+    });
   });
 }
