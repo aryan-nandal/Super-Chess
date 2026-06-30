@@ -14,9 +14,12 @@ Super Chess — the teaching-first chess gym.
   fifty-move rule, threefold repetition, and insufficient-material draws,
   surfaced as a live status label above the board.
 - **Tactics trainer** — a named-motif puzzle gym (open it from the board
-  screen's puzzle button). It presents a random puzzle, labels its motif (mate
-  in 1/2, fork, pin, skewer, back-rank mate, …), validates your moves against
-  the solution line, and offers **Try again** / **Skip** / **Next puzzle**.
+  screen's puzzle button). A chip row lets you drill one motif (mate in 1/2,
+  fork, pin, skewer, discovered attack, deflection, back-rank mate, win
+  material, sacrifice) or stay on **All** to draw from every motif. It presents
+  a random puzzle, labels it with the chosen (or detected) motif, validates your
+  moves against the solution line, and offers **Try again** / **Skip** /
+  **Next puzzle**.
 
 Promotion currently defaults to a queen; an explicit picker is planned.
 
@@ -35,10 +38,11 @@ flutter test
 
 At startup the app loads the bundled puzzle library under `assets/puzzles/`
 into a cross-platform in-memory repository (`InMemoryPuzzleRepository`, no
-SQLite) that backs the tactics trainer. The shipping bundle is currently the
-hand-authored `sample_puzzles.json` placeholder, used until the curated CC0
-Lichess set is bundled. That curated library is produced offline from the CC0
-Lichess puzzle database via `tool/curate_puzzles.dart`; see
+SQLite) that backs the tactics trainer. It loads the curated CC0 Lichess set
+(`puzzles.json`, ~528 puzzles), falling back to the hand-authored
+`sample_puzzles.json` placeholder only if that's missing or empty. The curated
+library is produced offline from the CC0 Lichess puzzle database via
+`tool/curate_puzzles.dart`; see
 [`assets/puzzles/README.md`](assets/puzzles/README.md) for regenerating it.
 
 The content database (`lib/data/content`) uses Drift, whose generated code
