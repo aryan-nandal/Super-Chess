@@ -15,6 +15,8 @@ A cross-platform Flutter app (Android · iOS · Web) under the Ninety Nine Labs 
 wedge is **pedagogy, not price**: a structured, motif-based path for the adult improver,
 built on a correct, offline-first foundation.
 
+play - https://super-chess-99labs.web.app/
+
 ## Features
 
 - **Interactive board** — tap-to-select, legal-move dots, and selection / last-move /
