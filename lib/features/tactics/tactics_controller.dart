@@ -126,9 +126,10 @@ class TacticsController extends Notifier<TacticsUiState> {
       _trySelect(square);
     } else if (square == selected) {
       _set(
-          status: TacticsStatus.solving,
-          attempt: current.attempt,
-          feedback: current.feedback);
+        status: TacticsStatus.solving,
+        attempt: current.attempt,
+        feedback: current.feedback,
+      );
     } else if (current.targets.contains(square)) {
       _play(selected, square);
     } else {
@@ -146,24 +147,26 @@ class TacticsController extends Notifier<TacticsUiState> {
           if (m.from == square) m.to,
       }.toList();
       _set(
-          status: TacticsStatus.solving,
-          attempt: attempt,
-          selected: square,
-          targets: targets,
-          feedback: state.feedback);
+        status: TacticsStatus.solving,
+        attempt: attempt,
+        selected: square,
+        targets: targets,
+        feedback: state.feedback,
+      );
     } else {
       _set(
-          status: TacticsStatus.solving,
-          attempt: attempt,
-          feedback: state.feedback);
+        status: TacticsStatus.solving,
+        attempt: attempt,
+        feedback: state.feedback,
+      );
     }
   }
 
   void _play(Square from, Square to) {
     final attempt = state.attempt!;
-    final candidates = generateLegalMoves(attempt.position)
-        .where((m) => m.from == from && m.to == to)
-        .toList();
+    final candidates = generateLegalMoves(
+      attempt.position,
+    ).where((m) => m.from == from && m.to == to).toList();
     if (candidates.isEmpty) {
       _set(status: TacticsStatus.solving, attempt: attempt);
       return;
@@ -178,19 +181,22 @@ class TacticsController extends Notifier<TacticsUiState> {
     switch (attempt.playUserMove(move)) {
       case MoveOutcome.solved:
         _set(
-            status: TacticsStatus.solved,
-            attempt: attempt,
-            feedback: 'Solved!');
+          status: TacticsStatus.solved,
+          attempt: attempt,
+          feedback: 'Solved!',
+        );
       case MoveOutcome.correct:
         _set(
-            status: TacticsStatus.solving,
-            attempt: attempt,
-            feedback: 'Correct — keep going');
+          status: TacticsStatus.solving,
+          attempt: attempt,
+          feedback: 'Correct — keep going',
+        );
       case MoveOutcome.incorrect:
         _set(
-            status: TacticsStatus.failed,
-            attempt: attempt,
-            feedback: 'Not the move — try again');
+          status: TacticsStatus.failed,
+          attempt: attempt,
+          feedback: 'Not the move — try again',
+        );
     }
   }
 

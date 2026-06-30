@@ -56,14 +56,14 @@ class TacticsScreen extends ConsumerWidget {
   /// reachable.
   Widget _motifPicker(TacticsUiState state, TacticsController controller) {
     Widget chip(String? motif, String label) => Padding(
-          padding: const EdgeInsets.only(right: 8),
-          child: ChoiceChip(
-            key: ValueKey('motif_${motif ?? 'all'}'),
-            label: Text(label),
-            selected: state.selectedMotif == motif,
-            onSelected: (_) => controller.setMotif(motif),
-          ),
-        );
+      padding: const EdgeInsets.only(right: 8),
+      child: ChoiceChip(
+        key: ValueKey('motif_${motif ?? 'all'}'),
+        label: Text(label),
+        selected: state.selectedMotif == motif,
+        onSelected: (_) => controller.setMotif(motif),
+      ),
+    );
 
     return SizedBox(
       height: 52,

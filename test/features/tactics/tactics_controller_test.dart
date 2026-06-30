@@ -101,32 +101,36 @@ void main() {
     expect(s.selected, isNull);
   });
 
-  test('intermediate-move feedback survives selecting/deselecting a piece',
-      () async {
-    final c = _container([_multi]);
-    await _loaded(c);
-    final ctrl = c.read(tacticsControllerProvider.notifier);
+  test(
+    'intermediate-move feedback survives selecting/deselecting a piece',
+    () async {
+      final c = _container([_multi]);
+      await _loaded(c);
+      final ctrl = c.read(tacticsControllerProvider.notifier);
 
-    // Play the correct first move; the opponent auto-replies, leaving the
-    // "keep going" feedback while the puzzle is still being solved.
-    ctrl.onSquareTap(Square.parse('e2'));
-    ctrl.onSquareTap(Square.parse('e4'));
-    expect(c.read(tacticsControllerProvider).status, TacticsStatus.solving);
-    expect(
-        c.read(tacticsControllerProvider).feedback, 'Correct — keep going');
+      // Play the correct first move; the opponent auto-replies, leaving the
+      // "keep going" feedback while the puzzle is still being solved.
+      ctrl.onSquareTap(Square.parse('e2'));
+      ctrl.onSquareTap(Square.parse('e4'));
+      expect(c.read(tacticsControllerProvider).status, TacticsStatus.solving);
+      expect(
+        c.read(tacticsControllerProvider).feedback,
+        'Correct — keep going',
+      );
 
-    // Selecting a piece must not wipe the intermediate feedback.
-    ctrl.onSquareTap(Square.parse('e4'));
-    var s = c.read(tacticsControllerProvider);
-    expect(s.selected, Square.parse('e4'));
-    expect(s.feedback, 'Correct — keep going');
+      // Selecting a piece must not wipe the intermediate feedback.
+      ctrl.onSquareTap(Square.parse('e4'));
+      var s = c.read(tacticsControllerProvider);
+      expect(s.selected, Square.parse('e4'));
+      expect(s.feedback, 'Correct — keep going');
 
-    // Nor must deselecting it.
-    ctrl.onSquareTap(Square.parse('e4'));
-    s = c.read(tacticsControllerProvider);
-    expect(s.selected, isNull);
-    expect(s.feedback, 'Correct — keep going');
-  });
+      // Nor must deselecting it.
+      ctrl.onSquareTap(Square.parse('e4'));
+      s = c.read(tacticsControllerProvider);
+      expect(s.selected, isNull);
+      expect(s.feedback, 'Correct — keep going');
+    },
+  );
 
   test('an empty library yields the empty status', () async {
     final c = _container([]);
