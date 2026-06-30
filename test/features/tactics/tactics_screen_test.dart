@@ -13,6 +13,17 @@ const _mate = TacticsPuzzle(
   themes: ['mateIn1', 'backRankMate'],
 );
 
+const _fork = TacticsPuzzle(
+  id: 'f1',
+  fen: 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1',
+  solution: ['e2e4', 'e7e5'],
+  rating: 1200,
+  themes: ['fork'],
+);
+
+String _title(WidgetTester tester) =>
+    tester.widget<Text>(find.byKey(const ValueKey('tactics_motif'))).data!;
+
 Future<void> _pumpLoaded(
   WidgetTester tester,
   List<TacticsPuzzle> puzzles,
@@ -38,11 +49,39 @@ Future<void> _pumpLoaded(
 }
 
 void main() {
-  testWidgets('shows the motif and the board', (tester) async {
+  testWidgets('shows the motif title, picker, and board', (tester) async {
     await _pumpLoaded(tester, [_mate]);
-    expect(find.text('Mate in 1'), findsOneWidget);
+    expect(_title(tester), 'Mate in 1');
+    expect(find.byKey(const ValueKey('motif_all')), findsOneWidget);
     expect(find.byKey(const ValueKey('sq_e2')), findsOneWidget);
     expect(find.textContaining('to play'), findsOneWidget);
+  });
+
+  testWidgets('the motif picker filters to the chosen motif', (tester) async {
+    await _pumpLoaded(tester, [_mate, _fork]);
+    expect(find.byKey(const ValueKey('motif_fork')), findsOneWidget);
+    expect(find.byKey(const ValueKey('motif_mateIn1')), findsOneWidget);
+
+    await tester.tap(find.byKey(const ValueKey('motif_fork')));
+    for (var i = 0; i < 10; i++) {
+      await tester.pump(const Duration(milliseconds: 10));
+    }
+    expect(_title(tester), 'Fork'); // now practicing the chosen motif
+  });
+
+  testWidgets('the title matches the selected motif, not the first theme', (
+    tester,
+  ) async {
+    // _mate has two recognized themes; 'mateIn1' comes first.
+    await _pumpLoaded(tester, [_mate]);
+    expect(_title(tester), 'Mate in 1'); // "All": puzzle's first recognized
+
+    await tester.tap(find.byKey(const ValueKey('motif_backRankMate')));
+    for (var i = 0; i < 10; i++) {
+      await tester.pump(const Duration(milliseconds: 10));
+    }
+    // The selected motif wins over the puzzle's first recognized theme.
+    expect(_title(tester), 'Back-rank mate');
   });
 
   testWidgets('playing the solution shows Solved + Next', (tester) async {

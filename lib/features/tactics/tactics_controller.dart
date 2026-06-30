@@ -24,12 +24,20 @@ class TacticsUiState {
   /// Short feedback after the last player move.
   final String? feedback;
 
+  /// The motifs available to practice (for the picker), sorted.
+  final List<String> motifs;
+
+  /// The motif currently being practiced, or `null` for "all motifs".
+  final String? selectedMotif;
+
   const TacticsUiState({
     required this.status,
     this.attempt,
     this.selected,
     this.targets = const [],
     this.feedback,
+    this.motifs = const [],
+    this.selectedMotif,
   });
 
   TacticsPuzzle? get puzzle => attempt?.puzzle;
@@ -43,40 +51,60 @@ class TacticsUiState {
   bool get isFailed => status == TacticsStatus.failed;
 }
 
-/// Drives one tactics session: loads a puzzle, validates player moves against
-/// the solution via [TacticsAttempt], and exposes board-selection state.
+/// Drives one tactics session: loads a puzzle (optionally filtered to a chosen
+/// motif), validates player moves against the solution via [TacticsAttempt],
+/// and exposes board-selection + motif-picker state.
 class TacticsController extends Notifier<TacticsUiState> {
   final Random _random;
   late PuzzleRepository _repository;
+  List<String> _motifs = const [];
+  String? _selectedMotif;
+
+  /// Identifies the most recently started load. A load only applies its result
+  /// if it is still the current generation, so a slow earlier load (e.g. from a
+  /// variable-latency repository) can't clobber a newer selection.
+  int _loadGeneration = 0;
 
   TacticsController({Random? random}) : _random = random ?? Random();
 
   @override
   TacticsUiState build() {
     _repository = ref.watch(puzzleRepositoryProvider);
-    _loadNext();
+    _init();
     return const TacticsUiState(status: TacticsStatus.loading);
   }
 
-  Future<void> _loadNext() async {
-    final themes = await _repository.themes();
-    if (themes.isEmpty) {
-      state = const TacticsUiState(status: TacticsStatus.empty);
-      return;
-    }
-    final theme = themes[_random.nextInt(themes.length)];
-    final puzzle = await _repository.randomByTheme(theme);
-    state = puzzle == null
-        ? const TacticsUiState(status: TacticsStatus.empty)
-        : TacticsUiState(
-            status: TacticsStatus.solving,
-            attempt: TacticsAttempt(puzzle),
-          );
+  Future<void> _init() async {
+    _motifs = await _repository.themes();
+    await _loadNext();
   }
 
-  /// Loads a fresh puzzle.
+  Future<void> _loadNext() async {
+    final generation = ++_loadGeneration;
+    if (_motifs.isEmpty) {
+      _set(status: TacticsStatus.empty);
+      return;
+    }
+    final theme = _selectedMotif ?? _motifs[_random.nextInt(_motifs.length)];
+    final puzzle = await _repository.randomByTheme(theme);
+    if (generation != _loadGeneration) return;
+    _set(
+      status: puzzle == null ? TacticsStatus.empty : TacticsStatus.solving,
+      attempt: puzzle == null ? null : TacticsAttempt(puzzle),
+    );
+  }
+
+  /// Practices only [motif] (or all motifs when `null`) and loads a fresh one.
+  void setMotif(String? motif) {
+    if (motif == _selectedMotif) return;
+    _selectedMotif = motif;
+    _set(status: TacticsStatus.loading);
+    _loadNext();
+  }
+
+  /// Loads a fresh puzzle (within the selected motif, if any).
   void nextPuzzle() {
-    state = const TacticsUiState(status: TacticsStatus.loading);
+    _set(status: TacticsStatus.loading);
     _loadNext();
   }
 
@@ -84,10 +112,7 @@ class TacticsController extends Notifier<TacticsUiState> {
   void retry() {
     final puzzle = state.puzzle;
     if (puzzle == null) return;
-    state = TacticsUiState(
-      status: TacticsStatus.solving,
-      attempt: TacticsAttempt(puzzle),
-    );
+    _set(status: TacticsStatus.solving, attempt: TacticsAttempt(puzzle));
   }
 
   /// Handles a tap: select a piece, move to a legal target, reselect, or clear.
@@ -100,7 +125,11 @@ class TacticsController extends Notifier<TacticsUiState> {
     if (selected == null) {
       _trySelect(square);
     } else if (square == selected) {
-      _solving(selected: null);
+      _set(
+        status: TacticsStatus.solving,
+        attempt: current.attempt,
+        feedback: current.feedback,
+      );
     } else if (current.targets.contains(square)) {
       _play(selected, square);
     } else {
@@ -109,16 +138,27 @@ class TacticsController extends Notifier<TacticsUiState> {
   }
 
   void _trySelect(Square square) {
-    final position = state.attempt!.position;
+    final attempt = state.attempt!;
+    final position = attempt.position;
     final piece = position.pieceAt(square);
     if (piece != null && piece.color == position.turn) {
       final targets = <Square>{
         for (final m in generateLegalMoves(position))
           if (m.from == square) m.to,
       }.toList();
-      _solving(selected: square, targets: targets);
+      _set(
+        status: TacticsStatus.solving,
+        attempt: attempt,
+        selected: square,
+        targets: targets,
+        feedback: state.feedback,
+      );
     } else {
-      _solving(selected: null);
+      _set(
+        status: TacticsStatus.solving,
+        attempt: attempt,
+        feedback: state.feedback,
+      );
     }
   }
 
@@ -128,32 +168,31 @@ class TacticsController extends Notifier<TacticsUiState> {
       attempt.position,
     ).where((m) => m.from == from && m.to == to).toList();
     if (candidates.isEmpty) {
-      _solving(selected: null);
+      _set(status: TacticsStatus.solving, attempt: attempt);
       return;
     }
     // Promotion auto-selects a queen (no promotion picker yet), so any puzzle
-    // whose solution requires a non-mating underpromotion will auto-fail until
-    // a picker is added — a deliberate deferral; fine for the current sample
-    // set.
+    // whose solution needs a non-mating underpromotion will auto-fail until a
+    // picker is added — a deliberate deferral; fine for the curated set.
     final move = candidates.firstWhere(
       (m) => m.promotion == null || m.promotion == PieceRole.queen,
       orElse: () => candidates.first,
     );
     switch (attempt.playUserMove(move)) {
       case MoveOutcome.solved:
-        state = TacticsUiState(
+        _set(
           status: TacticsStatus.solved,
           attempt: attempt,
           feedback: 'Solved!',
         );
       case MoveOutcome.correct:
-        state = TacticsUiState(
+        _set(
           status: TacticsStatus.solving,
           attempt: attempt,
           feedback: 'Correct — keep going',
         );
       case MoveOutcome.incorrect:
-        state = TacticsUiState(
+        _set(
           status: TacticsStatus.failed,
           attempt: attempt,
           feedback: 'Not the move — try again',
@@ -161,13 +200,22 @@ class TacticsController extends Notifier<TacticsUiState> {
     }
   }
 
-  void _solving({Square? selected, List<Square> targets = const []}) {
+  /// Emits a fresh state, always carrying the current motif-picker context.
+  void _set({
+    required TacticsStatus status,
+    TacticsAttempt? attempt,
+    Square? selected,
+    List<Square> targets = const [],
+    String? feedback,
+  }) {
     state = TacticsUiState(
-      status: TacticsStatus.solving,
-      attempt: state.attempt,
+      status: status,
+      attempt: attempt,
       selected: selected,
       targets: targets,
-      feedback: state.feedback,
+      feedback: feedback,
+      motifs: _motifs,
+      selectedMotif: _selectedMotif,
     );
   }
 }

@@ -14,7 +14,9 @@ const _motifNames = {
   'pin': 'Pin',
   'skewer': 'Skewer',
   'discoveredAttack': 'Discovered attack',
+  'deflection': 'Deflection',
   'hangingPiece': 'Win material',
+  'sacrifice': 'Sacrifice',
 };
 
 /// Friendly motif name from a puzzle's themes (first recognized one).
@@ -38,7 +40,41 @@ class TacticsScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(title: const Text('Tactics')),
-      body: SafeArea(child: _body(context, state, controller)),
+      body: SafeArea(
+        child: Column(
+          children: [
+            if (state.motifs.isNotEmpty) _motifPicker(state, controller),
+            Expanded(child: _body(context, state, controller)),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// A horizontal row of motif chips ("All" + each motif) for choosing what to
+  /// practice. Stays visible across loading/solving/solved so it's always
+  /// reachable.
+  Widget _motifPicker(TacticsUiState state, TacticsController controller) {
+    Widget chip(String? motif, String label) => Padding(
+      padding: const EdgeInsets.only(right: 8),
+      child: ChoiceChip(
+        key: ValueKey('motif_${motif ?? 'all'}'),
+        label: Text(label),
+        selected: state.selectedMotif == motif,
+        onSelected: (_) => controller.setMotif(motif),
+      ),
+    );
+
+    return SizedBox(
+      height: 52,
+      child: ListView(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        children: [
+          chip(null, 'All'),
+          for (final motif in state.motifs) chip(motif, motifLabel([motif])),
+        ],
+      ),
     );
   }
 
@@ -75,7 +111,11 @@ class TacticsScreen extends ConsumerWidget {
           child: Column(
             children: [
               Text(
-                motifLabel(state.puzzle!.themes),
+                motifLabel(
+                  state.selectedMotif != null
+                      ? [state.selectedMotif!]
+                      : state.puzzle!.themes,
+                ),
                 key: const ValueKey('tactics_motif'),
                 style: theme.textTheme.titleLarge,
               ),

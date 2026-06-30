@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'data/content/puzzle_seeder.dart';
+import 'data/content/puzzle_assets.dart';
 import 'domain/tactics/tactics.dart';
 import 'features/game/board_screen.dart';
 import 'features/tactics/tactics_controller.dart';
@@ -28,7 +28,7 @@ Future<void> main() async {
 /// it's missing/empty. On total failure it returns an empty repository so the
 /// app still starts and the trainer shows its empty state, not a blank screen.
 Future<PuzzleRepository> _loadPuzzleRepository() async {
-  for (final asset in const [PuzzleSeeder.libraryAsset, PuzzleSeeder.sampleAsset]) {
+  for (final asset in const [PuzzleAssets.library, PuzzleAssets.sample]) {
     try {
       final json = await rootBundle.loadString(asset);
       final puzzles = (jsonDecode(json) as List)
