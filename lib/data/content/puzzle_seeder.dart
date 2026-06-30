@@ -5,6 +5,7 @@ import 'package:flutter/services.dart' show AssetBundle, rootBundle;
 
 import '../../domain/tactics/tactics.dart';
 import 'content_database.dart';
+import 'puzzle_assets.dart';
 
 /// Seeds the read-only [ContentDatabase] with the bundled puzzle library.
 ///
@@ -12,13 +13,11 @@ import 'content_database.dart';
 /// the CC0 Lichess DB) is bundled as an asset and loaded once. Seeding is
 /// idempotent — it no-ops when the library is already populated.
 class PuzzleSeeder {
-  /// The curated CC0 Lichess library (`tool/curate_puzzles.dart` output) — the
-  /// real bundled puzzle set the app loads.
-  static const libraryAsset = 'assets/puzzles/puzzles.json';
+  /// The curated CC0 Lichess library — see [PuzzleAssets.library].
+  static const libraryAsset = PuzzleAssets.library;
 
-  /// Tiny hand-authored sample set for dev/tests and as a fallback if the
-  /// curated [libraryAsset] is missing/empty.
-  static const sampleAsset = 'assets/puzzles/sample_puzzles.json';
+  /// Tiny hand-authored sample/fallback set — see [PuzzleAssets.sample].
+  static const sampleAsset = PuzzleAssets.sample;
 
   final ContentDatabase db;
 
