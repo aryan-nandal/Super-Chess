@@ -1,69 +1,60 @@
-# super_chess
+# Super Chess
 
-Super Chess — the teaching-first chess gym.
+> **The teaching-first chess gym** — play locally against a full rules engine and drill a
+> 528-puzzle, motif-by-motif tactics trainer. Beginner→intermediate, offline-first, ad-free.
+
+> [!IMPORTANT]
+> **Engineering workflow — automated commit → validate → merge.**
+> Every change ships through a two-gate pipeline (`no-mistakes` AI review + GitHub CI),
+> merged only when both are green via *draft-until-green*.
+> 📄 See **[docs/AUTOMATED_MERGE_FLOW.md](docs/AUTOMATED_MERGE_FLOW.md)** — with flow diagrams.
+
+## What it is
+
+A cross-platform Flutter app (Android · iOS · Web) under the Ninety Nine Labs brand. The
+wedge is **pedagogy, not price**: a structured, motif-based path for the adult improver,
+built on a correct, offline-first foundation.
 
 ## Features
 
-- **Interactive board** — tap a piece to see its legal moves, then tap a
-  highlighted square to play. The board shows selection, legal-target,
-  last-move, and check highlights, and renders en-passant targets with a
-  capture ring.
-- **Local play** — play both sides on one device, with **Undo**, **Flip**
-  (board orientation), and **Reset** controls.
-- **Full chess rules** — legal move generation, check/checkmate, stalemate,
-  fifty-move rule, threefold repetition, and insufficient-material draws,
-  surfaced as a live status label above the board.
-- **Tactics trainer** — a named-motif puzzle gym (open it from the board
-  screen's puzzle button). A chip row lets you drill one motif (mate in 1/2,
-  fork, pin, skewer, discovered attack, deflection, back-rank mate, win
-  material, sacrifice) or stay on **All** to draw from every motif. It presents
-  a random puzzle, labels it with the chosen (or detected) motif, validates your
-  moves against the solution line, and offers **Try again** / **Skip** /
-  **Next puzzle**.
+- **Interactive board** — tap-to-select, legal-move dots, and selection / last-move /
+  check / en-passant highlights. Local two-side play with **Undo · Flip · Reset**.
+- **Full chess rules** — legal move generation, check/checkmate, stalemate, fifty-move,
+  threefold repetition, and insufficient-material draws, shown as a live status label.
+- **Tactics trainer** — a named-motif puzzle gym backed by **528 curated CC0 Lichess
+  puzzles**. A chip row drills one motif (mate in 1/2, fork, pin, skewer, discovered
+  attack, deflection, back-rank mate, win material, sacrifice) or **All**; it validates
+  your moves against the solution line with **Try again / Skip / Next**.
 
-Promotion currently defaults to a queen; an explicit picker is planned.
+## Architecture
+
+Layered + feature-first, dependencies pointing downward only:
+**Presentation** (widgets) → **Application** (Riverpod) → **Domain** (pure Dart) →
+**Data** (repos).
+
+- **Pure-Dart engine** (`lib/engine`) — legal move generation (**perft-verified**),
+  FEN/SAN/PGN, draw detection, and a transport-agnostic UCI interface. Zero Flutter
+  imports: the durable, fully-tested core.
+- **Domain** (`lib/domain`) — game model + the tactics solver, framework-free.
+- **Data** (`lib/data`) — a read-only Drift **content DB** and an `InMemoryPuzzleRepository`
+  (cross-platform, no SQLite on web) behind one `PuzzleRepository` interface. The CC0
+  library is curated **offline and engine-validated** by `tool/curate_puzzles.dart`.
+- **Stack** — Riverpod (state), Drift (persistence), go_router (planned), Firebase
+  (deferred). **TDD throughout** (~124 tests).
 
 ## Running
 
 ```sh
 flutter pub get
-flutter run
-```
-
-Run the tests with:
-
-```sh
+flutter run        # pick a device (Chrome for web)
 flutter test
 ```
 
-At startup the app loads the bundled puzzle library under `assets/puzzles/`
-into a cross-platform in-memory repository (`InMemoryPuzzleRepository`, no
-SQLite) that backs the tactics trainer. It loads the curated CC0 Lichess set
-(`puzzles.json`, ~528 puzzles), falling back to the hand-authored
-`sample_puzzles.json` placeholder only if that's missing or empty. The curated
-library is produced offline from the CC0 Lichess puzzle database via
-`tool/curate_puzzles.dart`; see
-[`assets/puzzles/README.md`](assets/puzzles/README.md) for regenerating it.
-
-The content database (`lib/data/content`) uses Drift, whose generated code
-(`*.g.dart`) is committed. After changing a table or query, regenerate it with:
+Drift generated code (`*.g.dart`) is committed; after changing a table/query:
 
 ```sh
 dart run build_runner build --delete-conflicting-outputs
 ```
 
-The Drift content DB is the persisted, scalable alternative behind the same
-`PuzzleRepository` interface; `PuzzleSeeder` seeds it (once, idempotently) from
-the same bundled library, but seeding is not yet wired into startup.
-
-## Getting Started
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+Regenerating the puzzle library is documented in
+[`assets/puzzles/README.md`](assets/puzzles/README.md).
