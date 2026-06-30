@@ -111,7 +111,11 @@ class TacticsScreen extends ConsumerWidget {
           child: Column(
             children: [
               Text(
-                motifLabel(state.puzzle!.themes),
+                motifLabel(
+                  state.selectedMotif != null
+                      ? [state.selectedMotif!]
+                      : state.puzzle!.themes,
+                ),
                 key: const ValueKey('tactics_motif'),
                 style: theme.textTheme.titleLarge,
               ),

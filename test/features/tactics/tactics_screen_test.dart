@@ -69,6 +69,21 @@ void main() {
     expect(_title(tester), 'Fork'); // now practicing the chosen motif
   });
 
+  testWidgets('the title matches the selected motif, not the first theme', (
+    tester,
+  ) async {
+    // _mate has two recognized themes; 'mateIn1' comes first.
+    await _pumpLoaded(tester, [_mate]);
+    expect(_title(tester), 'Mate in 1'); // "All": puzzle's first recognized
+
+    await tester.tap(find.byKey(const ValueKey('motif_backRankMate')));
+    for (var i = 0; i < 10; i++) {
+      await tester.pump(const Duration(milliseconds: 10));
+    }
+    // The selected motif wins over the puzzle's first recognized theme.
+    expect(_title(tester), 'Back-rank mate');
+  });
+
   testWidgets('playing the solution shows Solved + Next', (tester) async {
     await _pumpLoaded(tester, [_mate]);
     await tester.tap(find.byKey(const ValueKey('sq_e2')));
