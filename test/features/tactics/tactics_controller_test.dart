@@ -13,6 +13,16 @@ const _mate = TacticsPuzzle(
   themes: ['mateIn1'],
 );
 
+// A second puzzle with a different motif (a legal line; quality irrelevant
+// here — we only exercise motif filtering).
+const _fork = TacticsPuzzle(
+  id: 'f1',
+  fen: 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1',
+  solution: ['e2e4', 'e7e5'],
+  rating: 1200,
+  themes: ['fork'],
+);
+
 ProviderContainer _container(List<TacticsPuzzle> puzzles) {
   final c = ProviderContainer(
     overrides: [
@@ -85,5 +95,32 @@ void main() {
     final c = _container([]);
     final s = await _loaded(c);
     expect(s.status, TacticsStatus.empty);
+  });
+
+  test('exposes the available motifs, sorted', () async {
+    final c = _container([_mate, _fork]);
+    final s = await _loaded(c);
+    expect(s.motifs, ['fork', 'mateIn1']);
+  });
+
+  test('setMotif filters puzzles to the chosen motif', () async {
+    final c = _container([_mate, _fork]);
+    await _loaded(c);
+    c.read(tacticsControllerProvider.notifier).setMotif('fork');
+    final s = await _loaded(c);
+    expect(s.selectedMotif, 'fork');
+    expect(s.puzzle!.id, 'f1');
+    expect(s.puzzle!.themes, contains('fork'));
+  });
+
+  test('setMotif(null) returns to practicing all motifs', () async {
+    final c = _container([_mate, _fork]);
+    await _loaded(c);
+    final ctrl = c.read(tacticsControllerProvider.notifier);
+    ctrl.setMotif('fork');
+    await _loaded(c);
+    ctrl.setMotif(null);
+    final s = await _loaded(c);
+    expect(s.selectedMotif, isNull);
   });
 }
