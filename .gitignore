@@ -44,8 +44,9 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 
-# Private planning docs — never commit (keep local only)
-/docs/
+# Private planning docs — keep local only, EXCEPT the shared workflow doc.
+/docs/*
+!/docs/AUTOMATED_MERGE_FLOW.md
 
 # Claude Code local tooling (settings, worktrees) — never commit
 .claude/
