@@ -1,6 +1,6 @@
 {
-    "name": "super_chess",
-    "short_name": "super_chess",
+    "name": "Super Chess",
+    "short_name": "Super Chess",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
