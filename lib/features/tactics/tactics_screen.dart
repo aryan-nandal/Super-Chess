@@ -14,7 +14,9 @@ const _motifNames = {
   'pin': 'Pin',
   'skewer': 'Skewer',
   'discoveredAttack': 'Discovered attack',
+  'deflection': 'Deflection',
   'hangingPiece': 'Win material',
+  'sacrifice': 'Sacrifice',
 };
 
 /// Friendly motif name from a puzzle's themes (first recognized one).

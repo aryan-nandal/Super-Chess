@@ -23,6 +23,16 @@ const _fork = TacticsPuzzle(
   themes: ['fork'],
 );
 
+// A two-move (four-ply) line: setup e7e5, player e2e4 (correct, opponent
+// auto-replies d7d5), then the player solves with e4xd5.
+const _multi = TacticsPuzzle(
+  id: 'mm1',
+  fen: 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b KQkq - 0 1',
+  solution: ['e7e5', 'e2e4', 'd7d5', 'e4d5'],
+  rating: 1100,
+  themes: ['pin'],
+);
+
 ProviderContainer _container(List<TacticsPuzzle> puzzles) {
   final c = ProviderContainer(
     overrides: [
@@ -89,6 +99,33 @@ void main() {
     final s = c.read(tacticsControllerProvider);
     expect(s.status, TacticsStatus.solving);
     expect(s.selected, isNull);
+  });
+
+  test('intermediate-move feedback survives selecting/deselecting a piece',
+      () async {
+    final c = _container([_multi]);
+    await _loaded(c);
+    final ctrl = c.read(tacticsControllerProvider.notifier);
+
+    // Play the correct first move; the opponent auto-replies, leaving the
+    // "keep going" feedback while the puzzle is still being solved.
+    ctrl.onSquareTap(Square.parse('e2'));
+    ctrl.onSquareTap(Square.parse('e4'));
+    expect(c.read(tacticsControllerProvider).status, TacticsStatus.solving);
+    expect(
+        c.read(tacticsControllerProvider).feedback, 'Correct — keep going');
+
+    // Selecting a piece must not wipe the intermediate feedback.
+    ctrl.onSquareTap(Square.parse('e4'));
+    var s = c.read(tacticsControllerProvider);
+    expect(s.selected, Square.parse('e4'));
+    expect(s.feedback, 'Correct — keep going');
+
+    // Nor must deselecting it.
+    ctrl.onSquareTap(Square.parse('e4'));
+    s = c.read(tacticsControllerProvider);
+    expect(s.selected, isNull);
+    expect(s.feedback, 'Correct — keep going');
   });
 
   test('an empty library yields the empty status', () async {

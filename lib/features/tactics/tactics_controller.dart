@@ -60,6 +60,11 @@ class TacticsController extends Notifier<TacticsUiState> {
   List<String> _motifs = const [];
   String? _selectedMotif;
 
+  /// Identifies the most recently started load. A load only applies its result
+  /// if it is still the current generation, so a slow earlier load (e.g. from a
+  /// variable-latency repository) can't clobber a newer selection.
+  int _loadGeneration = 0;
+
   TacticsController({Random? random}) : _random = random ?? Random();
 
   @override
@@ -75,12 +80,14 @@ class TacticsController extends Notifier<TacticsUiState> {
   }
 
   Future<void> _loadNext() async {
+    final generation = ++_loadGeneration;
     if (_motifs.isEmpty) {
       _set(status: TacticsStatus.empty);
       return;
     }
     final theme = _selectedMotif ?? _motifs[_random.nextInt(_motifs.length)];
     final puzzle = await _repository.randomByTheme(theme);
+    if (generation != _loadGeneration) return;
     _set(
       status: puzzle == null ? TacticsStatus.empty : TacticsStatus.solving,
       attempt: puzzle == null ? null : TacticsAttempt(puzzle),
@@ -118,7 +125,10 @@ class TacticsController extends Notifier<TacticsUiState> {
     if (selected == null) {
       _trySelect(square);
     } else if (square == selected) {
-      _set(status: TacticsStatus.solving, attempt: current.attempt);
+      _set(
+          status: TacticsStatus.solving,
+          attempt: current.attempt,
+          feedback: current.feedback);
     } else if (current.targets.contains(square)) {
       _play(selected, square);
     } else {
@@ -139,9 +149,13 @@ class TacticsController extends Notifier<TacticsUiState> {
           status: TacticsStatus.solving,
           attempt: attempt,
           selected: square,
-          targets: targets);
+          targets: targets,
+          feedback: state.feedback);
     } else {
-      _set(status: TacticsStatus.solving, attempt: attempt);
+      _set(
+          status: TacticsStatus.solving,
+          attempt: attempt,
+          feedback: state.feedback);
     }
   }
 
